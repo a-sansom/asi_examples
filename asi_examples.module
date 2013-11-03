@@ -1,0 +1,75 @@
+<?php
+
+/**
+ * @file
+ * 
+ * Example showing adding a computed property to an entity, exposing that
+ * property for use by the Views module as a field, and appending the 
+ * field/property to a View provided by another module.
+ * 
+ * The computed property is the product of running an EntityFieldQuery.
+ */
+
+
+/**
+ * Implements hook_entity_property_info_alter()
+ * 
+ * Add a new computed property to the 'commerce_product' entity and expose it to
+ * Views
+ */
+function asi_examples_entity_property_info_alter(&$info) {
+  $info['commerce_product']['properties']['display_node_uri'] = array(
+    'type' => 'uri',
+    'label' => 'Display node',
+    'description' => 'URI of the node to display the product',
+    'getter callback' => 'asi_examples_product_display_node_uri',
+    'computed' => TRUE,
+    'entity views field' => TRUE,
+  );
+}
+
+
+/**
+ * Return a relative URI to a product display node
+ * 
+ * @param unknown_type $product
+ * @return string
+ */
+function asi_examples_product_display_node_uri($product) {
+  $uri = '';
+
+  // 'field_product' in the entityCondition() is the machine name of the content
+  // type 'Product reference field'
+  $query = new EntityFieldQuery;
+  $query->entityCondition('entity_type', 'node', '=')
+   ->fieldCondition('field_product', 'product_id', $product->product_id, '=')
+   ->range(0, 1);
+
+  if ($result = $query->execute()) {
+    $keys = array_keys($result['node']);
+    $nid = $result['node'][$keys[0]]->nid;
+    $uri = 'node/' . $nid;
+  }
+
+  return $uri;
+}
+
+
+/**
+* Implements hook_views_default_views_alter()
+* 
+* Add the the newly defined entity property that's been exposed as a Views field
+* to the default Drupal Commerce 'Products' view
+*/
+function asi_examples_views_default_views_alter(&$views) {
+  $handler =& $views['commerce_products']->display['default']->handler;
+
+  $handler->display->display_options['fields']['display_node_uri']['id'] = 'display_node_uri';
+  $handler->display->display_options['fields']['display_node_uri']['table'] = 'views_entity_commerce_product';
+  $handler->display->display_options['fields']['display_node_uri']['field'] = 'display_node_uri';
+  $handler->display->display_options['fields']['display_node_uri']['link_to_entity'] = 0;
+  $handler->display->display_options['fields']['display_node_uri']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['display_node_uri']['alter']['text'] = 'View';
+}
+
+

@@ -1,0 +1,7 @@
+name = ASI Examples
+description = Demonstrates EntityFieldQuery by adding a link to the default Drupal Commerce 'Products' View
+package = Other
+dependencies[] = commerce
+core = 7.x
+
+
