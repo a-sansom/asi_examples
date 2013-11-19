@@ -18,11 +18,11 @@
  * Views
  */
 function asi_examples_entity_property_info_alter(&$info) {
-  $info['commerce_product']['properties']['display_node_uri'] = array(
-    'type' => 'uri',
+  $info['commerce_product']['properties']['display_node_path'] = array(
+    'type' => 'text',
     'label' => 'Display node',
-    'description' => 'URI of the node to display the product',
-    'getter callback' => 'asi_examples_product_display_node_uri',
+    'description' => 'Path of the node to display the product',
+    'getter callback' => 'asi_examples_product_display_node_path',
     'computed' => TRUE,
     'entity views field' => TRUE,
   );
@@ -30,13 +30,10 @@ function asi_examples_entity_property_info_alter(&$info) {
 
 
 /**
- * Return a relative URI to a product display node
- * 
- * @param unknown_type $product
- * @return string
+ * Return a relative path to a product display node
  */
-function asi_examples_product_display_node_uri($product) {
-  $uri = '';
+function asi_examples_product_display_node_path($product) {
+  $path = '';
 
   // 'field_product' in the entityCondition() is the machine name of the content
   // type 'Product reference field'
@@ -48,10 +45,10 @@ function asi_examples_product_display_node_uri($product) {
   if ($result = $query->execute()) {
     $keys = array_keys($result['node']);
     $nid = $result['node'][$keys[0]]->nid;
-    $uri = 'node/' . $nid;
+    $path = 'node/' . $nid;
   }
 
-  return $uri;
+  return $path;
 }
 
 
@@ -64,12 +61,14 @@ function asi_examples_product_display_node_uri($product) {
 function asi_examples_views_default_views_alter(&$views) {
   $handler =& $views['commerce_products']->display['default']->handler;
 
-  $handler->display->display_options['fields']['display_node_uri']['id'] = 'display_node_uri';
-  $handler->display->display_options['fields']['display_node_uri']['table'] = 'views_entity_commerce_product';
-  $handler->display->display_options['fields']['display_node_uri']['field'] = 'display_node_uri';
-  $handler->display->display_options['fields']['display_node_uri']['link_to_entity'] = 0;
-  $handler->display->display_options['fields']['display_node_uri']['alter']['alter_text'] = TRUE;
-  $handler->display->display_options['fields']['display_node_uri']['alter']['text'] = 'View';
+  $handler->display->display_options['fields']['display_node_path']['id'] = 'display_node_path';
+  $handler->display->display_options['fields']['display_node_path']['table'] = 'views_entity_commerce_product';
+  $handler->display->display_options['fields']['display_node_path']['field'] = 'display_node_path';
+  $handler->display->display_options['fields']['display_node_path']['alter']['make_link'] = TRUE;
+  $handler->display->display_options['fields']['display_node_path']['alter']['path'] = '[display_node_path]';
+  $handler->display->display_options['fields']['display_node_path']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['display_node_path']['alter']['text'] = 'View';
+  $handler->display->display_options['fields']['display_node_path']['link_to_entity'] = 0;
 }
 
 
